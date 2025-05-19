@@ -1,46 +1,44 @@
 from fastapi import FastAPI, Request, Response, status
-from fastapi.responses import PlainTextResponse
-from starlette.datastructures import UploadFile
-from typing import Dict, Any
-import json
-import textwrap
+from starlette.datastructures import UploadFile, FormData
+import json, textwrap
 
 app = FastAPI()
 
-def pretty(event: Dict[str, Any]) -> str:
-    """Return a human-readable one-liner from the JSON."""
-    ts   = event.get("dateTime")
-    dev  = event.get("deviceID")
-    et   = event.get("eventType")
-    ac   = event.get("AccessControllerEvent", {})
-    major= ac.get("majorEventType")
-    sub  = ac.get("subEventType")
-    mode = ac.get("currentVerifyMode")
-    return f"[{ts}] {dev} {et}  major={major}  sub={sub}  mode={mode}"
+def pretty(e: dict) -> str:
+    ac  = e.get("AccessControllerEvent", {})
+    return (
+        f"[{e.get('dateTime')}] {e.get('deviceID')} {e.get('eventType')}"
+        f"  major={ac.get('majorEventType')}  sub={ac.get('subEventType')}"
+        f"  mode={ac.get('currentVerifyMode')}"
+    )
 
 @app.post("/hik/events")
 async def hik_events(request: Request):
-    content_type = request.headers.get("content-type", "")
-    body = await request.body()
-    print(f"Received {len(body)} bytes, CT={content_type}")
+    ct = request.headers.get("content-type", "")
+    raw_len = int(request.headers.get("content-length", 0))
+    print(f"Received {raw_len} bytes • {ct}")
 
-    # ── 1. MULTIPART ─────────────────────────────────────────────
-    if content_type.startswith("multipart/form-data"):
-        # Let Starlette parse it
-        form = await request.form()
-        part: UploadFile = form["event_log"]
-        event_json = await part.read()
-        event = json.loads(event_json)
-    # ── 2. PLAIN JSON ────────────────────────────────────────────
-    elif content_type.startswith("application/json"):
+    # ── multipart ───────────────────────────────────────────────
+    if ct.startswith("multipart/form-data"):
+        form: FormData = await request.form()
+        part = form["event_log"]
+
+        if isinstance(part, UploadFile):
+            event_json_bytes = await part.read()
+        else:                         # Already plain str
+            event_json_bytes = str(part).encode()
+
+        event = json.loads(event_json_bytes)
+
+    # ── plain JSON ──────────────────────────────────────────────
+    elif ct.startswith("application/json"):
         event = await request.json()
+
     else:
         return Response(status_code=415)
 
-    # ── 3. Pretty output ─────────────────────────────────────────
+    # ── log nicely ──────────────────────────────────────────────
     print("\nRaw JSON:\n", textwrap.indent(json.dumps(event, indent=2), "  "))
     print("Summary :", pretty(event))
-
-    # TODO: store in DB / queue here …
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
