@@ -11,13 +11,19 @@ async def hik_events(request: Request):
     print(f"Received {len(raw_xml)} bytes")
     print(raw_xml.decode("utf-8"))
 
-    # pull a couple fields (employeeNo & attendanceStatus are enough for PoC)
-    root = ET.fromstring(raw_xml) if raw_xml else None
-    if root is None:
+    try:
+        # pull a couple fields (employeeNo & attendanceStatus are enough for PoC)
+        root = ET.fromstring(raw_xml) if raw_xml else None
+        if root is None:
+            return Response(status_code=400)
+        emp_no  = root.findtext(".//employeeNo")
+        status  = root.findtext(".//attendanceStatus")
+        dt      = root.findtext("dateTime")
+        
+    except ET.ParseError as e:
+        print(f"XML Parse Error: {e}")
         return Response(status_code=400)
-    emp_no  = root.findtext(".//employeeNo")
-    status  = root.findtext(".//attendanceStatus")
-    dt      = root.findtext("dateTime")
+
 
     print(f"{dt}  {emp_no}  {status}")   # <-- replace with DB insert / queue
 
