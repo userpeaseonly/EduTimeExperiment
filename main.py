@@ -1,31 +1,46 @@
-# pip install fastapi uvicorn python-multipart python-hikvision-event
 from fastapi import FastAPI, Request, Response, status
-import xml.etree.ElementTree as ET
+from fastapi.responses import PlainTextResponse
+from starlette.datastructures import UploadFile
+from typing import Dict, Any
+import json
+import textwrap
 
 app = FastAPI()
 
-@app.post("/hik/events", status_code=status.HTTP_204_NO_CONTENT)
+def pretty(event: Dict[str, Any]) -> str:
+    """Return a human-readable one-liner from the JSON."""
+    ts   = event.get("dateTime")
+    dev  = event.get("deviceID")
+    et   = event.get("eventType")
+    ac   = event.get("AccessControllerEvent", {})
+    major= ac.get("majorEventType")
+    sub  = ac.get("subEventType")
+    mode = ac.get("currentVerifyMode")
+    return f"[{ts}] {dev} {et}  major={major}  sub={sub}  mode={mode}"
+
+@app.post("/hik/events")
 async def hik_events(request: Request):
-    # the device sends XML by default
-    raw_xml = await request.body()
-    print(f"Received {len(raw_xml)} bytes")
-    print(raw_xml.decode("utf-8"))
+    content_type = request.headers.get("content-type", "")
+    body = await request.body()
+    print(f"Received {len(body)} bytes, CT={content_type}")
 
-    try:
-        # pull a couple fields (employeeNo & attendanceStatus are enough for PoC)
-        root = ET.fromstring(raw_xml) if raw_xml else None
-        if root is None:
-            return Response(status_code=400)
-        emp_no  = root.findtext(".//employeeNo")
-        status  = root.findtext(".//attendanceStatus")
-        dt      = root.findtext("dateTime")
-        
-    except ET.ParseError as e:
-        print(f"XML Parse Error: {e}")
-        return Response(status_code=400)
+    # ── 1. MULTIPART ─────────────────────────────────────────────
+    if content_type.startswith("multipart/form-data"):
+        # Let Starlette parse it
+        form = await request.form()
+        part: UploadFile = form["event_log"]
+        event_json = await part.read()
+        event = json.loads(event_json)
+    # ── 2. PLAIN JSON ────────────────────────────────────────────
+    elif content_type.startswith("application/json"):
+        event = await request.json()
+    else:
+        return Response(status_code=415)
 
+    # ── 3. Pretty output ─────────────────────────────────────────
+    print("\nRaw JSON:\n", textwrap.indent(json.dumps(event, indent=2), "  "))
+    print("Summary :", pretty(event))
 
-    print(f"{dt}  {emp_no}  {status}")   # <-- replace with DB insert / queue
+    # TODO: store in DB / queue here …
 
-    # MUST reply quickly (<=2 s) or device retries
-    return Response(status_code=204)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
