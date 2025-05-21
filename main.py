@@ -25,7 +25,7 @@ async def hik_events(request: Request):
 
         if isinstance(part, UploadFile):
             event_json_bytes = await part.read()
-        else:                         # Already plain str
+        else:                       
             event_json_bytes = str(part).encode()
 
         event = json.loads(event_json_bytes)
@@ -41,4 +41,4 @@ async def hik_events(request: Request):
     print("\nRaw JSON:\n", textwrap.indent(json.dumps(event, indent=2), "  "))
     print("Summary :", pretty(event))
 
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    return Response(status_code=status.HTTP_200_OK)
