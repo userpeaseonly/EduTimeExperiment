@@ -46,6 +46,8 @@ async def hik_events(request: Request):
     else:
         return Response(status_code=415)
 
+    # ── log nicely ──────────────────────────────────────────────
+    print("\nRaw JSON:\n", textwrap.indent(json.dumps(event, indent=2), "  "))
     print("Summary :", pretty(event))
 
     return Response(status_code=status.HTTP_200_OK)
