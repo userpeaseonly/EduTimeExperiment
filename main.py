@@ -26,7 +26,7 @@ async def hik_events(request: Request):
     ct = request.headers.get("content-type", "")
     raw_len = int(request.headers.get("content-length", 0))
     print("-------------------Raw request---------------------------------")
-    print(await request.form())
+    print(await request.body())
     print("-------------------End of raw request--------------------------")
 
     # ── multipart ───────────────────────────────────────────────
