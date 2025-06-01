@@ -1,7 +1,6 @@
 from fastapi import FastAPI, Request, Response, WebSocket, WebSocketDisconnect, status
 from starlette.datastructures import UploadFile, FormData
 import json, textwrap, logging
-from collections import deque
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -11,7 +10,7 @@ from connection_manager import manager
 
 
 app = FastAPI()
-q = deque()
+
 
 def pretty(e: dict) -> str:
     ac  = e.get("AccessControllerEvent", {})
@@ -48,13 +47,11 @@ async def hik_events(request: Request):
 
     print("Summary :", pretty(event))
     
-    q.append(event)
-    
     # Broadcast the event to all connected WebSocket clients
-    # try:
-    #     await manager.broadcast(pretty(event))
-    # except Exception as e:
-    #     logger.error(f"Error broadcasting event: {e}")
+    try:
+        await manager.broadcast(pretty(event))
+    except Exception as e:
+        logger.error(f"Error broadcasting event: {e}")
         
     return Response(status_code=status.HTTP_200_OK)
 
@@ -68,15 +65,6 @@ async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
         while True:
-            # queue_length = len(q)
-            # if queue_length > 0:
-            #     event = q.popleft()
-            #     message = pretty(event)
-            #     await manager.send_personal_message(message, websocket)
-            #     logger.info(f"Sent event to WebSocket client: {message}")
-            # else:
-            #     # Wait for a short period before checking the queue again
-            #     await websocket.receive_text()
             await websocket.receive_bytes() # Or bytes, depending on client. Just to keep the loop open.
     except WebSocketDisconnect:
         manager.disconnect(websocket)
