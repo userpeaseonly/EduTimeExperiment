@@ -28,7 +28,7 @@ async def hik_events(request: Request):
     if ct.startswith("multipart/form-data"):
         form: FormData = await request.form()
         part = form["event_log"]
-        print("Form data received: \n", part)
+        print("Form data received -- -- -- -- -- -- --: \n", part)
 
         if isinstance(part, UploadFile):
             event_json_bytes = await part.read()
