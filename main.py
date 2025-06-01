@@ -25,7 +25,9 @@ def pretty(e: dict) -> str:
 async def hik_events(request: Request):
     ct = request.headers.get("content-type", "")
     raw_len = int(request.headers.get("content-length", 0))
-    print(f"Received {raw_len} bytes • {ct}")
+    print("-------------------Raw request---------------------------------")
+    print(request.body())
+    print("-------------------End of raw request--------------------------")
 
     # ── multipart ───────────────────────────────────────────────
     if ct.startswith("multipart/form-data"):
@@ -46,10 +48,16 @@ async def hik_events(request: Request):
     else:
         return Response(status_code=415)
 
-    # ── log nicely ──────────────────────────────────────────────
-    print("\nRaw JSON:\n", textwrap.indent(json.dumps(event, indent=2), "  "))
     print("Summary :", pretty(event))
-
+    
+    q.append(event)
+    
+    # Broadcast the event to all connected WebSocket clients
+    # try:
+    #     await manager.broadcast(pretty(event))
+    # except Exception as e:
+    #     logger.error(f"Error broadcasting event: {e}")
+        
     return Response(status_code=status.HTTP_200_OK)
 
 
@@ -61,17 +69,20 @@ async def websocket_endpoint(websocket: WebSocket):
     """
     await manager.connect(websocket)
     try:
-        # Keep the connection open. You can also add logic here to receive
-        # messages from clients if needed (e.g., for specific event subscriptions).
         while True:
-            # This 'await' keeps the connection alive. If the client sends data,
-            # it will be received here. For this "push-only" scenario,
-            # you might just want it to wait or explicitly pass.
-            # await websocket.receive_text() # If you expect messages from client
+            # queue_length = len(q)
+            # if queue_length > 0:
+            #     event = q.popleft()
+            #     message = pretty(event)
+            #     await manager.send_personal_message(message, websocket)
+            #     logger.info(f"Sent event to WebSocket client: {message}")
+            # else:
+            #     # Wait for a short period before checking the queue again
+            #     await websocket.receive_text()
             await websocket.receive_bytes() # Or bytes, depending on client. Just to keep the loop open.
     except WebSocketDisconnect:
         manager.disconnect(websocket)
         logger.info("WebSocket client disconnected.")
     except Exception as e:
         logger.error(f"Error in WebSocket connection: {e}")
-        manager.disconnect(websocket) # Ensure disconnection on other errors
+        manager.disconnect(websocket)
