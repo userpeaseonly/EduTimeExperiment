@@ -25,10 +25,6 @@ def pretty(e: dict) -> str:
 async def hik_events(request: Request):
     ct = request.headers.get("content-type", "")
     raw_len = int(request.headers.get("content-length", 0))
-    print("-------------------Raw request---------------------------------")
-    print(await request.body())
-    print("-------------------End of raw request--------------------------")
-
     # ── multipart ───────────────────────────────────────────────
     if ct.startswith("multipart/form-data"):
         form: FormData = await request.form()
@@ -40,6 +36,8 @@ async def hik_events(request: Request):
             event_json_bytes = str(part).encode()
 
         event = json.loads(event_json_bytes)
+        print("Raw length:", raw_len, "bytes")
+        logger.info(f"Parsed event from multipart/form-data: {event}")
 
     # ── plain JSON ──────────────────────────────────────────────
     elif ct.startswith("application/json"):
