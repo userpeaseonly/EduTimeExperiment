@@ -1,6 +1,8 @@
 from fastapi import FastAPI, Request, Response, WebSocket, WebSocketDisconnect, status, HTTPException
 from starlette.datastructures import UploadFile, FormData
+from pydantic import ValidationError
 import json, textwrap, logging
+from schemas import HikvisionWebhookPayload
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
