@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request, Response, WebSocket, WebSocketDisconnect, status, HTTPException
 from pydantic import ValidationError
+from typing import Optional
 from schemas import EventNotificationAlert
 from starlette.datastructures import UploadFile, FormData
 import json, textwrap, logging
