@@ -1,4 +1,6 @@
-from fastapi import FastAPI, Request, Response, WebSocket, WebSocketDisconnect, status
+from fastapi import FastAPI, Request, Response, WebSocket, WebSocketDisconnect, status, HTTPException
+from pydantic import ValidationError
+from schemas import EventNotificationAlert 
 from starlette.datastructures import UploadFile, FormData
 import json, textwrap, logging
 
@@ -12,48 +14,165 @@ from connection_manager import manager
 app = FastAPI()
 
 
-def pretty(e: dict) -> str:
-    ac  = e.get("AccessControllerEvent", {})
-    return (
-        f"[{e.get('dateTime')}] {e.get('deviceID')} {e.get('eventType')}"
-        f"  major={ac.get('majorEventType')}  sub={ac.get('subEventType')}"
-        f"  mode={ac.get('currentVerifyMode')}"
-    )
+# --- Helper Function for Pretty Logging (updated for new schema) ---
+def pretty(e: EventNotificationAlert) -> str:
+    """
+    Extracts and formats key information from the EventNotificationAlert model for logging.
+    """
+    # Accessing fields directly from the validated Pydantic model
+    ace = e.access_controller_event
+    summary_parts = [
+        f"[{e.dateTime.isoformat()}]", # datetime object
+        f"DevID={e.deviceID or 'N/A'}",
+        f"Type={e.eventType}",
+        f"Major={ace.majorEventType}",
+        f"Sub={ace.subEventType}",
+        f"Mode={ace.currentVerifyMode or 'N/A'}"
+    ]
+    if ace.employeeNo:
+        summary_parts.append(f"EmpNo={ace.employeeNo}")
+    if ace.name:
+        summary_parts.append(f"Name='{ace.name}'")
+    if ace.cardNo:
+        summary_parts.append(f"CardNo={ace.cardNo}")
+    if ace.pictureURL:
+        summary_parts.append(f"PicURL='{ace.pictureURL}'")
+
+    return " ".join(summary_parts)
+
+# def pretty(e: dict) -> str:
+#     ac  = e.get("AccessControllerEvent", {})
+#     return (
+#         f"[{e.get('dateTime')}] {e.get('deviceID')} {e.get('eventType')}"
+#         f"  major={ac.get('majorEventType')}  sub={ac.get('subEventType')}"
+#         f"  mode={ac.get('currentVerifyMode')}"
+#     )
+
 
 @app.post("/hik/events")
 async def hik_events(request: Request):
-    ct = request.headers.get("content-type", "")
+    """
+    Handles incoming Hikvision webhook events.
+    Supports both 'multipart/form-data' and 'application/json' content types.
+    Parses and validates the event using Pydantic, then broadcasts to WebSockets.
+    """
+    content_type = request.headers.get("content-type", "")
+    raw_length = int(request.headers.get("content-length", 0))
+    logger.info(f"Received {raw_length} bytes • Content-Type: {content_type}")
 
+    event_payload_dict: dict = {} # Will hold the raw dictionary payload
 
-    if ct.startswith("multipart/form-data"):
-        form: FormData = await request.form()
-        part = form["event_log"]
-        print("Form data received -- -- -- -- -- -- --: \n", part)
+    # --- Handle multipart/form-data ---
+    if content_type.startswith("multipart/form-data"):
+        try:
+            form: FormData = await request.form()
+            # Hikvision often sends the event JSON in a part named "event_log"
+            event_part = form.get("event_log")
 
-        if isinstance(part, UploadFile):
-            event_json_bytes = await part.read()
-        else:                       
-            event_json_bytes = str(part).encode()
+            if event_part is None:
+                logger.error("Missing 'event_log' part in multipart/form-data.")
+                raise HTTPException(status_code=400, detail="Missing 'event_log' part")
 
-        event = json.loads(event_json_bytes)
-        logger.info(f"Parsed event from multipart/form-data: {event}")
+            if isinstance(event_part, UploadFile):
+                event_json_bytes = await event_part.read()
+            else:
+                # Fallback for if 'event_log' is sent as a plain string field, though less common for JSON
+                event_json_bytes = str(event_part).encode('utf-8')
 
-    # ── plain JSON ──────────────────────────────────────────────
-    elif ct.startswith("application/json"):
-        event = await request.json()
+            event_payload_dict = json.loads(event_json_bytes)
+            logger.info("Successfully parsed multipart/form-data.")
+            logger.debug(f"Form data received (parsed dict): {event_payload_dict}") # Use debug for verbose output
 
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON decoding error in multipart/form-data: {e}")
+            raise HTTPException(status_code=400, detail="Invalid JSON in 'event_log' part")
+        except Exception as e:
+            logger.error(f"Error processing multipart/form-data: {e}")
+            raise HTTPException(status_code=400, detail="Failed to process multipart data")
+
+    # --- Handle plain JSON ---
+    elif content_type.startswith("application/json"):
+        try:
+            event_payload_dict = await request.json()
+            logger.info("Successfully parsed application/json.")
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON decoding error in application/json: {e}")
+            raise HTTPException(status_code=400, detail="Invalid JSON payload")
+        except Exception as e:
+            logger.error(f"Error processing application/json: {e}")
+            raise HTTPException(status_code=400, detail="Failed to process JSON data")
+
+    # --- Unsupported Content Type ---
     else:
-        return Response(status_code=415)
+        logger.warning(f"Unsupported content type: {content_type}")
+        raise HTTPException(status_code=415, detail=f"Unsupported Media Type: {content_type}")
 
-    print("Summary :", pretty(event))
-    
-    # Broadcast the event to all connected WebSocket clients
+    # --- Validate and Log Event with Pydantic ---
+    validated_event: EventNotificationAlert # Declare type for clarity
     try:
-        await manager.broadcast(pretty(event))
+        # Use the EventNotificationAlert model to validate the parsed dictionary
+        validated_event = EventNotificationAlert.model_validate(event_payload_dict)
+        logger.info("Event payload validated successfully with Pydantic.")
+
+        # Log the raw JSON (for full context) and a pretty summary
+        raw_json_str = json.dumps(event_payload_dict, indent=2)
+        logger.info(f"\nRaw JSON:\n{textwrap.indent(raw_json_str, '  ')}")
+
+        # Use the validated Pydantic model for pretty logging
+        summary_str = pretty(validated_event)
+        logger.info(f"Summary: {summary_str}")
+
+        # --- BROADCAST TO WEBSOCKETS ---
+        # You can choose what to broadcast:
+        # 1. A pretty, human-readable summary (as currently implemented)
+        await manager.broadcast(summary_str)
+        # 2. The full raw JSON string received from Hikvision
+        # await manager.broadcast(raw_json_str)
+        # 3. The validated Pydantic model converted back to JSON (best for structured client-side parsing)
+        # await manager.broadcast(validated_event.model_dump_json(by_alias=True, indent=2))
+
+    except ValidationError as e:
+        logger.error(f"Pydantic validation error: {e.errors()}")
+        raise HTTPException(status_code=422, detail=f"Validation Error: {e.errors()}")
     except Exception as e:
-        logger.error(f"Error broadcasting event: {e}")
-        
+        logger.error(f"Unexpected error during event processing or broadcasting: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
     return Response(status_code=status.HTTP_200_OK)
+
+# @app.post("/hik/events")
+# async def hik_events(request: Request):
+#     ct = request.headers.get("content-type", "")
+
+#     if ct.startswith("multipart/form-data"):
+#         form: FormData = await request.form()
+#         part = form["event_log"]
+#         print("Form data received -- -- -- -- -- -- --: \n", part)
+
+#         if isinstance(part, UploadFile):
+#             event_json_bytes = await part.read()
+#         else:                       
+#             event_json_bytes = str(part).encode()
+
+#         event = json.loads(event_json_bytes)
+#         logger.info(f"Parsed event from multipart/form-data: {event}")
+
+#     # ── plain JSON ──────────────────────────────────────────────
+#     elif ct.startswith("application/json"):
+#         event = await request.json()
+
+#     else:
+#         return Response(status_code=415)
+
+#     print("Summary :", pretty(event))
+    
+#     # Broadcast the event to all connected WebSocket clients
+#     try:
+#         await manager.broadcast(pretty(event))
+#     except Exception as e:
+#         logger.error(f"Error broadcasting event: {e}")
+        
+#     return Response(status_code=status.HTTP_200_OK)
 
 
 

@@ -2,12 +2,19 @@ from pydantic import BaseModel, Field, ValidationError
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 
-# --- 1. AccessControllerEvent Model ---
-# This model represents the detailed access control specific data.
+
+# This model represents the FaceRect data for FaceID events
+class FaceRect(BaseModel):
+    height: float
+    width: float
+    x: float
+    y: float
+
+# This model represents the detailed AccessControllerEvent section
 class AccessControllerEvent(BaseModel):
     """
     Represents the detailed AccessControllerEvent section within the Hikvision webhook payload.
-    This includes specifics like card numbers, employee IDs, and the crucial picture URL.
+    Combines fields from both example structures.
     """
     deviceName: Optional[str] = Field(None, description="Name of the device related to the event")
     majorEventType: int = Field(..., description="Major event type code")
@@ -30,7 +37,8 @@ class AccessControllerEvent(BaseModel):
     accessChannel: Optional[int] = Field(None, description="Access channel number")
     deviceNo: Optional[int] = Field(None, description="Device number")
     distractControlNo: Optional[int] = Field(None, description="Distract control number")
-    employeeNo: Optional[str] = Field(None, description="Employee number (important for FaceID events)")
+    employeeNo: Optional[str] = Field(None, description="Employee number")
+    employeeNoString: Optional[str] = Field(None, description="Employee number as a string (found in example2)")
     localControllerID: Optional[int] = Field(None, description="Local controller ID")
     InternetAccess: Optional[int] = Field(None, description="Internet access status")
     type: Optional[int] = Field(None, description="Generic type field")
@@ -39,7 +47,7 @@ class AccessControllerEvent(BaseModel):
     serialNo: Optional[int] = Field(None, description="Serial number")
     channelControllerID: Optional[int] = Field(None, description="Channel controller ID")
     channelControllerLampID: Optional[int] = Field(None, description="Channel controller lamp ID")
-    channelControllerIRAdaptorID: Optional[int] = Field(None, description="Channel controller IR adaptor ID")
+    channelControllerIRAdaptorID: Optional[int] = Field(None, description="Channel controller IR emitter ID")
     channelControllerIREmitterID: Optional[int] = Field(None, description="Channel controller IR emitter ID")
     userType: Optional[str] = Field(None, description="Type of user involved in the event")
     currentVerifyMode: Optional[str] = Field(None, description="Current verification mode")
@@ -49,42 +57,33 @@ class AccessControllerEvent(BaseModel):
     statusValue: Optional[int] = Field(None, description="Status value")
     pictureURL: Optional[str] = Field(None, description="URL to download the associated picture (e.g., face capture)")
     picturesNumber: Optional[int] = Field(None, description="Number of pictures associated with the event")
+    name: Optional[str] = Field(None, description="Name of the person (found in example2)")
+    label: Optional[str] = Field(None, description="Event label (found in examples)")
+    mask: Optional[str] = Field(None, description="Mask detection status (e.g., 'no', 'unknown')")
+    purePwdVerifyEnable: Optional[bool] = Field(None, description="Pure password verification enabled status")
+    FaceRect: Optional[FaceRect] = Field(None, description="Bounding box for detected face (FaceID events)")
 
-# --- 2. EventNotificationAlert Model ---
-# This model represents the main notification alert wrapper.
+# This model represents the top-level EventNotificationAlert
 class EventNotificationAlert(BaseModel):
     """
     Represents the main EventNotificationAlert structure of the Hikvision webhook payload.
     This is the top-level container for general event information.
     """
-    channelID: Optional[str] = Field(None, description="ID of the channel where the event occurred")
+    ipAddress: Optional[str] = Field(None, description="IP address of the device")
+    portNo: Optional[int] = Field(None, description="Port number of the device")
+    protocol: Optional[str] = Field(None, description="Protocol used by the device")
+    macAddress: Optional[str] = Field(None, description="MAC address of the device")
+    channelID: Optional[int] = Field(None, description="ID of the channel where the event occurred")
     dateTime: datetime = Field(..., description="Timestamp of the event") # Pydantic will parse this string to datetime
     activePostCount: Optional[int] = Field(None, description="Number of active posts")
     eventType: str = Field(..., description="The primary type of the event (e.g., 'AccessControllerEvent')")
     eventState: Optional[str] = Field(None, description="State of the event (e.g., 'active')")
     eventDescription: Optional[str] = Field(None, description="Human-readable description of the event")
-    devIndex: Optional[str] = Field(None, description="Device index")
-    channelName: Optional[str] = Field(None, description="Name of the channel")
+    deviceID: Optional[str] = Field(None, description="ID of the device where the event occurred")
     # Nested AccessControllerEvent model, aliased for Hikvision's PascalCase
     access_controller_event: AccessControllerEvent = Field(
         alias="AccessControllerEvent",
         description="Detailed information about the access control event"
     )
 
-# --- 3. HikvisionWebhookPayload Model ---
-# This is the outermost model representing the entire incoming JSON.
-class HikvisionWebhookPayload(BaseModel):
-    """
-    The complete Pydantic model for the entire Hikvision webhook payload.
-    This is the top-level wrapper containing the EventNotificationAlert.
-    """
-    event_notification_alert: EventNotificationAlert = Field(
-        alias="EventNotificationAlert",
-        description="Main event notification alert payload"
-    )
 
-    # Optional: Configure Pydantic behavior for this model
-    model_config = {
-        "extra": "ignore", # Ignore any extra fields not defined in the schema
-        "populate_by_name": True # Allow creating instances using Python attribute names OR aliases
-    }
