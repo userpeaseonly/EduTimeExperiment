@@ -61,7 +61,7 @@ class AccessControllerEvent(BaseModel):
     label: Optional[str] = Field(None, description="Event label (found in examples)")
     mask: Optional[str] = Field(None, description="Mask detection status (e.g., 'no', 'unknown')")
     purePwdVerifyEnable: Optional[bool] = Field(None, description="Pure password verification enabled status")
-    FaceRect: Optional[FaceRect] = Field(None, description="Bounding box for detected face (FaceID events)")
+    face_rect: Optional[FaceRect] = Field(None, alias="FaceRect", description="Bounding box for detected face (FaceID events)")
 
 # This model represents the top-level EventNotificationAlert
 class EventNotificationAlert(BaseModel):
