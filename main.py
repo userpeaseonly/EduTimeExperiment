@@ -14,47 +14,42 @@ from connection_manager import manager
 app = FastAPI()
 
 
-# --- Helper Function for Pretty Logging (updated for new schema) ---
 def pretty(e: EventNotificationAlert) -> str:
     """
     Extracts and formats key information from the EventNotificationAlert model for logging.
     """
-    # Accessing fields directly from the validated Pydantic model
     ace = e.access_controller_event
     summary_parts = [
-        f"[{e.dateTime.isoformat()}]", # datetime object
-        f"DevID={e.deviceID or 'N/A'}",
-        f"Type={e.eventType}",
-        f"Major={ace.majorEventType}",
-        f"Sub={ace.subEventType}",
-        f"Mode={ace.currentVerifyMode or 'N/A'}"
+        f"[{e.date_time.isoformat()}]",
+        f"DevID={e.device_id or 'N/A'}",
+        f"Type={e.event_type}",
+        f"Major={ace.major_event_type}",
+        f"Sub={ace.sub_event_type}",
+        f"Mode={ace.current_verify_mode or 'N/A'}"
     ]
-    if ace.employeeNo:
-        summary_parts.append(f"EmpNo={ace.employeeNo}")
+    if ace.employee_no:
+        summary_parts.append(f"EmpNo={ace.employee_no}")
     if ace.name:
         summary_parts.append(f"Name='{ace.name}'")
-    if ace.cardNo:
-        summary_parts.append(f"CardNo={ace.cardNo}")
-    if ace.pictureURL:
-        summary_parts.append(f"PicURL='{ace.pictureURL}'")
+    if ace.card_no:
+        summary_parts.append(f"CardNo={ace.card_no}")
+    if ace.picture_url:
+        summary_parts.append(f"PicURL='{ace.picture_url}'")
 
     return " ".join(summary_parts)
 
 
 @app.post("/hik/events")
 async def hik_events(request: Request):
-    
     content_type = request.headers.get("content-type", "")
     raw_length = int(request.headers.get("content-length", 0))
     logger.info(f"Received {raw_length} bytes • Content-Type: {content_type}")
 
-    event_payload_dict: dict = {} # Will hold the raw dictionary payload
+    event_payload_dict: dict = {}
 
-    # --- Handle multipart/form-data ---
     if content_type.startswith("multipart/form-data"):
         try:
             form: FormData = await request.form()
-            # Hikvision often sends the event JSON in a part named "event_log"
             event_part = form.get("event_log")
 
             if event_part is None:
@@ -64,12 +59,11 @@ async def hik_events(request: Request):
             if isinstance(event_part, UploadFile):
                 event_json_bytes = await event_part.read()
             else:
-                # Fallback for if 'event_log' is sent as a plain string field, though less common for JSON
                 event_json_bytes = str(event_part).encode('utf-8')
 
             event_payload_dict = json.loads(event_json_bytes)
             logger.info("Successfully parsed multipart/form-data.")
-            logger.debug(f"Form data received (parsed dict): {event_payload_dict}") # Use debug for verbose output
+            logger.debug(f"Form data received (parsed dict): {event_payload_dict}")
 
         except json.JSONDecodeError as e:
             logger.error(f"JSON decoding error in multipart/form-data: {e}")
@@ -78,7 +72,6 @@ async def hik_events(request: Request):
             logger.error(f"Error processing multipart/form-data: {e}")
             raise HTTPException(status_code=400, detail="Failed to process multipart data")
 
-    # --- Handle plain JSON ---
     elif content_type.startswith("application/json"):
         try:
             event_payload_dict = await request.json()
@@ -89,29 +82,21 @@ async def hik_events(request: Request):
         except Exception as e:
             logger.error(f"Error processing application/json: {e}")
             raise HTTPException(status_code=400, detail="Failed to process JSON data")
-
-    # --- Unsupported Content Type ---
     else:
         logger.warning(f"Unsupported content type: {content_type}")
         raise HTTPException(status_code=415, detail=f"Unsupported Media Type: {content_type}")
 
-    # --- Validate and Log Event with Pydantic ---
-    validated_event: EventNotificationAlert # Declare type for clarity
     try:
-        # Use the EventNotificationAlert model to validate the parsed dictionary
         validated_event = EventNotificationAlert.model_validate(event_payload_dict)
         logger.info("Event payload validated successfully with Pydantic.")
 
-        # Log the raw JSON (for full context) and a pretty summary
         raw_json_str = json.dumps(event_payload_dict, indent=2)
         logger.info(f"\nRaw JSON:\n{textwrap.indent(raw_json_str, '  ')}")
 
-        # Use the validated Pydantic model for pretty logging
         summary_str = pretty(validated_event)
         logger.info(f"Summary: {summary_str}")
         
         await manager.broadcast(summary_str)
-        
 
     except ValidationError as e:
         logger.error(f"Pydantic validation error: {e.errors()}")
@@ -121,6 +106,7 @@ async def hik_events(request: Request):
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
     return Response(status_code=status.HTTP_200_OK)
+
 
 
 
