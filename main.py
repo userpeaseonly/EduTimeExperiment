@@ -90,9 +90,6 @@ async def hik_events(request: Request):
         validated_event = EventNotificationAlert.model_validate(event_payload_dict)
         logger.info("Event payload validated successfully with Pydantic.")
 
-        raw_json_str = json.dumps(event_payload_dict, indent=2)
-        logger.info(f"\nRaw JSON:\n{textwrap.indent(raw_json_str, '  ')}")
-
         summary_str = pretty(validated_event)
         logger.info(f"Summary: {summary_str}")
         
