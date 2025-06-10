@@ -90,11 +90,12 @@ async def hik_events(request: Request):
         validated_event = EventNotificationAlert.model_validate(event_payload_dict)
         logger.info("Event payload validated successfully with Pydantic.")
 
+        raw_json_str = json.dumps(event_payload_dict, indent=2)
+        logger.info(f"\nRaw JSON:\n{textwrap.indent(raw_json_str, '  ')}")
+
         summary_str = pretty(validated_event)
         logger.info(f"Summary: {summary_str}")
         
-        await manager.broadcast(summary_str)
-
     except ValidationError as e:
         logger.error(f"Pydantic validation error: {e.errors()}")
         raise HTTPException(status_code=422, detail=f"Validation Error: {e.errors()}")
@@ -104,21 +105,3 @@ async def hik_events(request: Request):
 
     return Response(status_code=status.HTTP_200_OK)
 
-
-
-
-@app.websocket("/ws/events")
-async def websocket_endpoint(websocket: WebSocket):
-    """
-    WebSocket endpoint for clients to connect and receive event updates.
-    """
-    await manager.connect(websocket)
-    try:
-        while True:
-            await websocket.receive_bytes() # Or bytes, depending on client. Just to keep the loop open.
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
-        logger.info("WebSocket client disconnected.")
-    except Exception as e:
-        logger.error(f"Error in WebSocket connection: {e}")
-        manager.disconnect(websocket)
