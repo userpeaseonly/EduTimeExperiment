@@ -43,11 +43,7 @@ def pretty(e: EventNotificationAlert) -> str:
 
 @app.post("/hik/events")
 async def hik_events(request: Request):
-    """
-    Handles incoming Hikvision webhook events.
-    Supports both 'multipart/form-data' and 'application/json' content types.
-    Parses and validates the event using Pydantic, then broadcasts to WebSockets.
-    """
+    
     content_type = request.headers.get("content-type", "")
     raw_length = int(request.headers.get("content-length", 0))
     logger.info(f"Received {raw_length} bytes • Content-Type: {content_type}")
@@ -113,15 +109,9 @@ async def hik_events(request: Request):
         # Use the validated Pydantic model for pretty logging
         summary_str = pretty(validated_event)
         logger.info(f"Summary: {summary_str}")
-
-        # --- BROADCAST TO WEBSOCKETS ---
-        # You can choose what to broadcast:
-        # 1. A pretty, human-readable summary (as currently implemented)
+        
         await manager.broadcast(summary_str)
-        # 2. The full raw JSON string received from Hikvision
-        # await manager.broadcast(raw_json_str)
-        # 3. The validated Pydantic model converted back to JSON (best for structured client-side parsing)
-        # await manager.broadcast(validated_event.model_dump_json(by_alias=True, indent=2))
+        
 
     except ValidationError as e:
         logger.error(f"Pydantic validation error: {e.errors()}")
