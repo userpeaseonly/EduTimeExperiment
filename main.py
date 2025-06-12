@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request, Response, status, HTTPException, Depends
+from fastapi.staticfiles import StaticFiles
 from pydantic import ValidationError
 from schemas.events import EventNotificationAlert 
 from starlette.datastructures import UploadFile, FormData
@@ -14,6 +15,9 @@ logger = logging.getLogger(__name__)
 
 
 app = FastAPI()
+
+
+app.mount("/images", StaticFiles(directory="event_images"), name="images")
 
 
 import os
