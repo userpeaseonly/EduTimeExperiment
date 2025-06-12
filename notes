@@ -163,3 +163,38 @@ fefefwageegfqaeg…
 
 
 
+
+{
+"Device": {
+    "EhomeParams": {
+        "EhomeID": "T1"
+    },
+    "ISAPIPortBound": false,
+    "activeStatus": true,
+    "devIndex": "39F65E91-7660-A444-B8F5-C6EBBF232ED3",
+    "devMode": "DS-K1T343MWX",
+    "devName": "DS-K1T343MWX",
+    "devStatus": "online",
+    "devType": "AccessControl",
+    "devVersion": "V4.38.0 build 250109",
+    "protocolType": "ehomeV5",
+    "videoChannelNum": 1
+}
+
+
+{
+"Device": {
+    "EhomeParams": {
+        "EhomeID": "T2"
+    },
+    "ISAPIPortBound": false,
+    "activeStatus": true,
+    "devIndex": "B5F1FFA8-D9F7-894E-90BC-1265FC2E100A",
+    "devMode": "DS-K1T343MWX",
+    "devName": "DS-K1T343MWX",
+    "devStatus": "online",
+    "devType": "AccessControl",
+    "devVersion": "V4.38.0 build 250109",
+    "protocolType": "ehomeV5",
+    "videoChannelNum": 1
+}
