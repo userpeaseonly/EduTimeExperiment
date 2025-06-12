@@ -1,0 +1,165 @@
+{
+    "HttpHostNotificationList": [
+        {
+            "HttpHostNotification": {
+                "addressingFormatType": "ipaddress",
+                "id": "1",
+                "ipAddress": "157.90.119.184",
+                "portNo": 7663,
+                "protocolType": "EHome",
+                "url": ""
+            }
+        },
+        {
+            "HttpHostNotification": {
+                "addressingFormatType": "ipaddress",
+                "id": "2",
+                "ipAddress": "188.245.102.88",
+                "portNo": 8001,
+                "protocolType": "HTTP",
+                "url": "/hik/events"
+            }
+        }
+    ]
+}
+
+
+
+{
+    "HttpHostNotificationList": [
+        {
+            "HttpHostNotification": {
+                "id": "2",
+                "url": "/hik/events",
+                "protocolType": "HTTP",
+                "addressingFormatType": "ipaddress",
+                "ipAddress": "188.245.102.88",
+                "portNo": 8002
+            }
+        }
+    ]
+}
+
+
+{
+    "dateTime": "2025-06-11T00:52:11+05:00",
+    "activePostCount": 1,
+    "eventType": "AccessControllerEvent",
+    "eventState": "active",
+    "eventDescription": "Access Controller Event",
+    "deviceID": "Daraja",
+    "AccessControllerEvent": {
+      "deviceName": "Access Controller",
+      "majorEventType": 5,
+      "subEventType": 75,
+      "name": "Umarjon Normurodov",
+      "cardReaderKind": 1,
+      "cardReaderNo": 1,
+      "verifyNo": 225,
+      "employeeNoString": "2ce5f8a3281946c383793db758476729",
+      "serialNo": 613,
+      "userType": "normal",
+      "currentVerifyMode": "cardOrfaceOrPw",
+      "frontSerialNo": 612,
+      "attendanceStatus": "checkIn",
+      "label": "Check In",
+      "statusValue": 0,
+      "mask": "no",
+      "picturesNumber": 1,
+      "purePwdVerifyEnable": true,
+      "FaceRect": {
+        "height": 0.503,
+        "width": 0.285,
+        "x": 0.321,
+        "y": 0.325
+      }
+    }
+  }
+  
+  
+  
+  
+  "AccessControllerEvent":{
+"deviceName": "",
+"majorEventType": 1,
+"subEventType": 1,
+"inductiveEventType": "",
+"netUser": "",
+"remoteHostAddr": "",
+"cardNo": "",
+"cardType": 1,
+"name": "",
+"whiteListNo": 1,
+"reportChannel": 1,
+"cardReaderKind": 1,
+"cardReaderNo": 1,
+"doorNo": 1,
+"verifyNo": 1,
+"alarmInNo": 1,
+"alarmOutNo": 1,
+"caseSensorNo": 1,
+"RS485No": 1,
+"multiCardGroupNo": 1,
+"accessChannel": 1,
+"deviceNo": 1,
+"distractControlNo": 1,
+"employeeNo": 1,
+"employeeNoString": "",
+"employeeName":"",
+"localControllerID": 1,
+"InternetAccess": 1,
+"type": 1,
+"MACAddr": "",
+"swipeCardType": 1,
+"serialNo": 1,
+"channelControllerID": 1,
+"channelControllerLampID": 1,
+"channelControllerIRAdaptorID": 1,
+"channelControllerIREmitterID": 1,
+"userType": "normal",
+"currentVerifyMode": ,
+"currentEvent": true,
+"QRCodeInfo":"",
+"thermometryUnit":"",
+"currTemperature": ,
+"isAbnomalTemperature": ,
+"RegionCoordinates":{
+"positionX": ,
+"positionY":
+},
+"remoteCheck": true,
+"mask":"",
+"frontSerialNo": 1,
+"attendanceStatus":"",
+"statusValue": 1,
+"pictureURL": "",
+"picturesNumber": 1,
+"unlockType": "password",
+"classroomId":"",
+"classroomName":"",
+"analysisModule
+"customInfo": ""
+},
+}
+--MIME_boundary
+Content-Disposition: form-data; name="Picture"; filename="Picture.jpg";
+Content-Type: image/jpeg
+Content-Length: 516876
+Content-ID: pictureImage
+fefefwageegfqaeg…
+--MIME_boundary
+Content-Disposition: form-data; name="VisibleLight"; filename="VisibleLight.jpg";
+Content-Type: image/jpeg
+Content-Length: 516876
+Content-ID: visibleLightImage
+fefefwageegfqaeg…
+--MIME_boundary
+Content-Disposition: form-data; name="Thermal"; filename="Thermal.jpg";
+Content-Type: image/jpeg
+Content-Length: 516876
+Content-ID: thermalImage
+fefefwageegfqaeg…
+--MIME_boundary
+
+
+

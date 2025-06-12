@@ -9,7 +9,7 @@ class FaceRect(BaseModel):
     x: float
     y: float
 
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(populate_by_name=True, ignore_extra=True)
 
 
 class AccessControllerEvent(BaseModel):
@@ -60,7 +60,7 @@ class AccessControllerEvent(BaseModel):
     pure_pwd_verify_enable: Optional[bool] = Field(None, alias="purePwdVerifyEnable")
     face_rect: Optional[FaceRect] = Field(None, alias="FaceRect")
 
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(populate_by_name=True, ignore_extra=True)
 
 
 class EventNotificationAlert(BaseModel):
@@ -77,4 +77,4 @@ class EventNotificationAlert(BaseModel):
     device_id: Optional[str] = Field(None, alias="deviceID")
     access_controller_event: AccessControllerEvent = Field(..., alias="AccessControllerEvent")
 
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(populate_by_name=True, ignore_extra=True)
