@@ -25,44 +25,49 @@ from fastapi.responses import JSONResponse
 SAVE_DIR = "event_images"
 os.makedirs(SAVE_DIR, exist_ok=True)
 
+
 @app.post("/hik/events")
 async def receive_event(
     request: Request,
     Picture: UploadFile = File(None),
     VisibleLight: UploadFile = File(None),
-    Thermal: UploadFile = File(None)
+    Thermal: UploadFile = File(None),
 ):
-    # Extract multipart form data
-    form = await request.form()
-
-    # Extract JSON from the raw body
-    raw_body = await request.body()
     try:
-        # Attempt to extract JSON from part 1 of multipart (you may need to tune this based on your sender)
-        json_part = form.get("json")
-        if not json_part:
-            json_part = next((part for part in form if isinstance(part, str) and "eventType" in part), None)
+        form = await request.form()
+        
+        # Find the JSON part from the unnamed part
+        json_string = None
+        for key in form.keys():
+            if not isinstance(form[key], UploadFile) and "eventType" in str(form[key]):
+                json_string = form[key]
+                break
+        
+        if not json_string:
+            return JSONResponse(status_code=400, content={"error": "No valid JSON data found"})
 
-        event_data = json.loads(json_part) if json_part else {}
+        # Parse the event data
+        event_data = json.loads(json_string)
         print("🔔 Received Event:")
-        print(json.dumps(event_data, indent=4))
+        print(json.dumps(event_data, indent=2))
+
+        # Save image files
+        def save_file(file: UploadFile, name: str):
+            if file:
+                filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{name}"
+                file_path = os.path.join(SAVE_DIR, filename)
+                with open(file_path, "wb") as f:
+                    f.write(file.file.read())
+                print(f"📸 Saved {name} -> {file_path}")
+
+        save_file(Picture, "Picture.jpg")
+        save_file(VisibleLight, "VisibleLight.jpg")
+        save_file(Thermal, "Thermal.jpg")
+
+        return {"status": "received", "event": event_data.get("eventType", "unknown")}
+
     except Exception as e:
-        return JSONResponse(status_code=400, content={"error": f"Invalid JSON data: {e}"})
-
-    # Save image files if provided
-    def save_file(file: UploadFile, name: str):
-        if file:
-            filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{name}"
-            file_path = os.path.join(SAVE_DIR, filename)
-            with open(file_path, "wb") as f:
-                f.write(file.file.read())
-            print(f"📸 Saved {name}: {file_path}")
-
-    save_file(Picture, "Picture.jpg")
-    save_file(VisibleLight, "VisibleLight.jpg")
-    save_file(Thermal, "Thermal.jpg")
-
-    return {"status": "received", "event": event_data.get("eventType", "unknown")}
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 
 # @app.post("/hik/events")
