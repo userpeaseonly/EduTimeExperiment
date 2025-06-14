@@ -10,3 +10,5 @@ USE_TZ = True
 
 
 SAVE_DIR = "event_images"
+
+LOGS_DIR = "logs"

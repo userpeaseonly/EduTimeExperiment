@@ -52,6 +52,8 @@ async def receive_event(
                 logger.info(event)
             elif isinstance(event, EventNotificationAlert):
                 log_pretty_event(event)
+            else:
+                logger.warning("Received unknown event type.")
         except ValidationError as ve:
             logger.error("Validation failed for EventNotificationAlert.")
             logger.error(f"Validation error: {ve}")
@@ -63,7 +65,7 @@ async def receive_event(
         # Save raw JSON to disk
         event_id = datetime.now().strftime("%Y%m%d_%H%M%S")
         event_filename = f"{event_id}_{event_data.get('eventType', 'Unknown')}.json"
-        json_path = os.path.join(config.SAVE_DIR, event_filename)
+        json_path = os.path.join(config.LOGS_DIR, event_filename)
         with open(json_path, "w", encoding="utf-8") as f:
             json.dump(event_data, f, indent=2, ensure_ascii=False)
 
