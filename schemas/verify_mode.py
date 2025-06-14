@@ -1,6 +1,7 @@
 from enum import Enum
 
 class VerifyMode(str, Enum):
+    INVALID = "invalid"
     CARD_AND_PW = "cardAndPw"
     CARD = "card"
     CARD_OR_PW = "cardOrPw"
