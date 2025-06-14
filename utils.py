@@ -20,16 +20,15 @@ def log_pretty_event(event: EventNotificationAlert) -> None:
         "Event State": event.event_state,
         "Description": event.event_description,
         "Post Count": event.active_post_count,
-        "Date Time": event.date_time
+        "Date Time": str(event.date_time),
+        "Major Event": event.access_controller_event.major_event,
+        "Minor Event": event.access_controller_event.minor_event,
     }
 
     # Prepare inner AccessControllerEvent data if available
-    # ace = getattr(event, "access_controller_event", None)
     ace = event.access_controller_event if event.access_controller_event else None
     if ace:
         ace_data = {
-            "Major Event": ace.major_event,
-            "Minor Event": ace.minor_event,
             "Employee No": ace.person_id,
             "Employee Name": ace.person_name,
             "Verify Mode": ace.current_verify_mode,
