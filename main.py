@@ -54,6 +54,7 @@ async def receive_event(
                 log_pretty_event(event)
         except ValidationError as ve:
             logger.error("Validation failed for EventNotificationAlert.")
+            logger.error(f"Validation error: {ve}")
             return JSONResponse(status_code=422, content={"error": str(ve)})
 
         # Save image
