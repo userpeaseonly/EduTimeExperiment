@@ -90,8 +90,7 @@ async def receive_event(
                     front_serial_no=event.access_controller_event.front_serial_no,
                     attendance_status=event.access_controller_event.attendance_status,
                     pictures_number=event.access_controller_event.pictures_number,
-                    mask=event.access_controller_event.mask,
-                    event_metadata=event.event_metadata
+                    mask=event.access_controller_event.mask
                 )
                 crud.create_event(event_in, db)
             else:

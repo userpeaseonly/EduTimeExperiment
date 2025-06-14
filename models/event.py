@@ -51,8 +51,8 @@ class Event(Base):
     pictures_number: Mapped[Optional[int]] = mapped_column(default=None)
     mask: Mapped[Optional[str]] = mapped_column(default=None)
 
-    # Optional structured metadata (can store raw nested values)
-    event_metadata: Mapped[Optional[dict]] = mapped_column(MutableDict.as_mutable(JSONB), default=None)
+    # # Optional structured metadata (can store raw nested values)
+    # event_metadata: Mapped[Optional[dict]] = mapped_column(MutableDict.as_mutable(JSONB), default=None)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now(timezone.utc))
 
