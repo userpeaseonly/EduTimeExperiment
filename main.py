@@ -97,14 +97,14 @@ async def receive_event(
         except ValidationError as ve:
             logger.error("Validation failed for EventNotificationAlert.")
             logger.error(f"Validation error: {ve}")
-            return JSONResponse(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
+            return JSONResponse(content={"error": str(ve)}, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
         # Save image
         operations.save_image(Picture, "Picture")
 
-        return JSONResponse(status_code=status.HTTP_200_OK)
+        return JSONResponse(content={"status": "ok"}, status_code=status.HTTP_200_OK)
 
     except Exception as e:
         logger.exception("Error handling /hik/events")
         logger.error(f"Error: {e}")
-        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return JSONResponse(content={"error": str(e)}, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
