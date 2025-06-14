@@ -5,7 +5,7 @@ from datetime import datetime
 from fastapi import FastAPI, Request, UploadFile, File
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import ValidationError
+from pydantic import ValidationError, TypeAdapter
 
 from schemas.events import HeartbeatInfo, EventNotificationAlert, EventUnion
 from core import config
@@ -47,7 +47,7 @@ async def receive_event(
 
         # Parse and log event
         try:
-            event = EventUnion(event_data)
+            event = TypeAdapter(EventUnion).validate_python(**event_data)
             if isinstance(event, HeartbeatInfo):
                 logger.info(event)
             elif isinstance(event, EventNotificationAlert):
