@@ -13,7 +13,7 @@ from db import Base
 
 
 
-class PersonPurpose(str, Enum):
+class PersonPurpose(Enum):
     ATTENDANCE = "att"
     INFORMATION = "info"
 
