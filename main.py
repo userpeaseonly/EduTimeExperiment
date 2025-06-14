@@ -71,4 +71,5 @@ async def receive_event(
 
     except Exception as e:
         logger.exception("Error handling /hik/events")
+        logger.error(f"Error: {e}")
         return JSONResponse(status_code=500, content={"error": str(e)})
