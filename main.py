@@ -11,7 +11,7 @@ from schemas.events import HeartbeatInfo, EventNotificationAlert, AccessControll
 
 from core import config
 from db import get_async_db
-from utils import pretty
+from utils import log_pretty_event
 
 
 
@@ -50,7 +50,7 @@ async def receive_event(
         print(event_data)
         print("---------------------------Parsed Version--------------------------------------")
         parsed_data = EventNotificationAlert(**event_data)
-        print(parsed_data)
+        log_pretty_event(parsed_data)
         print("-------------------------------------------")
 
         # Log the core fields if present
