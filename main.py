@@ -98,6 +98,8 @@ async def receive_event(
                     pictures_number=event.access_controller_event.pictures_number,
                     mask=event.access_controller_event.mask
                 )
+                print("Purpose being saved:", event_in.purpose, type(event_in.purpose))
+                print("=-==--=-=--=-=-=-=-=-=--==-=-=-==--=-=----=============================-----------==========-------------===========")
                 await crud.create_event(event_in, db)
             else:
                 logger.warning("Received unknown event type.")
