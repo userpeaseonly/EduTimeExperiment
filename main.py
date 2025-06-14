@@ -56,6 +56,7 @@ async def receive_event(
             return JSONResponse(status_code=400, content={"error": "No valid event JSON found."})
 
         event_data = json.loads(json_string)
+        logger.info(f"Received event data: {event_data}")
 
         # Parse and log event
         try:
@@ -71,7 +72,6 @@ async def receive_event(
                 )
                 await crud.create_heartbeat(event_in, db)
             elif isinstance(event, EventNotificationAlert):
-                print(f"Received event: {event.event_type} at current verify mode: {event.access_controller_event.current_verify_mode}")
                 log_pretty_event(event)
                 event_in = models.Event(
                     date_time=event.date_time,
