@@ -2,7 +2,7 @@ import os
 import json
 import logging
 from datetime import datetime
-from fastapi import FastAPI, Request, UploadFile, File, Depends
+from fastapi import FastAPI, Request, UploadFile, File, Depends, status
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import ValidationError, TypeAdapter
@@ -11,8 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from schemas.events import HeartbeatInfo, EventNotificationAlert, EventUnion
 from core import config
 from utils import log_pretty_event, log_pretty_heartbeat
-from operations import operations as op
-from operations import crud
+from operations import crud, operations
 from db import get_async_db
 from models import event as models
 
@@ -63,7 +62,7 @@ async def receive_event(
                     event_state=event.event_state,
                     event_description=event.event_description
                 )
-                crud.create_heartbeat(event_in, db)
+                await crud.create_heartbeat(event_in, db)
             elif isinstance(event, EventNotificationAlert):
                 log_pretty_event(event)
                 event_in = models.Event(
@@ -92,28 +91,20 @@ async def receive_event(
                     pictures_number=event.access_controller_event.pictures_number,
                     mask=event.access_controller_event.mask
                 )
-                crud.create_event(event_in, db)
+                await crud.create_event(event_in, db)
             else:
                 logger.warning("Received unknown event type.")
         except ValidationError as ve:
             logger.error("Validation failed for EventNotificationAlert.")
             logger.error(f"Validation error: {ve}")
-            return JSONResponse(status_code=422, content={"error": str(ve)})
+            return JSONResponse(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
         # Save image
-        op.save_image(Picture, "Picture")
+        operations.save_image(Picture, "Picture")
 
-        # Save raw JSON to disk
-        event_id = datetime.now().strftime("%Y%m%d_%H%M%S")
-        event_filename = f"{event_id}_{event_data.get('eventType', 'Unknown')}.json"
-        json_path = os.path.join(config.LOGS_DIR, event_filename)
-        with open(json_path, "w", encoding="utf-8") as f:
-            json.dump(event_data, f, indent=2, ensure_ascii=False)
-
-        logger.info(f"Event saved to file: {event_filename}")
-        return {"status": "ok", "saved": event_filename}
+        return JSONResponse(status_code=status.HTTP_200_OK)
 
     except Exception as e:
         logger.exception("Error handling /hik/events")
         logger.error(f"Error: {e}")
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
