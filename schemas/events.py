@@ -1,80 +1,53 @@
 from pydantic import BaseModel, Field, ConfigDict
-from typing import Optional
+from typing import Optional, Union, Annotated
 from datetime import datetime
 
-
-class FaceRect(BaseModel):
-    height: float
-    width: float
-    x: float
-    y: float
-
-    model_config = ConfigDict(populate_by_name=True, ignore_extra=True)
+from .verify_mode import VerifyMode
 
 
-class AccessControllerEvent(BaseModel):
-    device_name: Optional[str] = Field(None, alias="deviceName")
-    major_event_type: int = Field(..., alias="majorEventType")
-    sub_event_type: int = Field(..., alias="subEventType")
-    net_user: Optional[str] = Field(None, alias="netUser")
-    remote_host_addr: Optional[str] = Field(None, alias="remoteHostAddr")
-    card_no: Optional[str] = Field(None, alias="cardNo")
-    card_type: Optional[int] = Field(None, alias="cardType")
-    white_list_no: Optional[int] = Field(None, alias="whiteListNo")
-    report_channel: Optional[int] = Field(None, alias="reportChannel")
-    card_reader_kind: Optional[int] = Field(None, alias="cardReaderKind")
-    card_reader_no: Optional[int] = Field(None, alias="cardReaderNo")
-    door_no: Optional[int] = Field(None, alias="doorNo")
-    verify_no: Optional[int] = Field(None, alias="verifyNo")
-    alarm_in_no: Optional[int] = Field(None, alias="alarmInNo")
-    alarm_out_no: Optional[int] = Field(None, alias="alarmOutNo")
-    case_sensor_no: Optional[int] = Field(None, alias="caseSensorNo")
-    rs485_no: Optional[int] = Field(None, alias="RS485No")
-    multi_card_group_no: Optional[int] = Field(None, alias="multiCardGroupNo")
-    access_channel: Optional[int] = Field(None, alias="accessChannel")
-    device_no: Optional[int] = Field(None, alias="deviceNo")
-    distract_control_no: Optional[int] = Field(None, alias="distractControlNo")
-    employee_no: Optional[str] = Field(None, alias="employeeNo")
-    employee_no_str: Optional[str] = Field(None, alias="employeeNoString")
-    local_controller_id: Optional[int] = Field(None, alias="localControllerID")
-    internet_access: Optional[int] = Field(None, alias="InternetAccess")
-    type_: Optional[int] = Field(None, alias="type")
-    mac_addr: Optional[str] = Field(None, alias="MACAddr")
-    swipe_card_type: Optional[int] = Field(None, alias="swipeCardType")
-    serial_no: Optional[int] = Field(None, alias="serialNo")
-    channel_controller_id: Optional[int] = Field(None, alias="channelControllerID")
-    channel_controller_lamp_id: Optional[int] = Field(None, alias="channelControllerLampID")
-    channel_controller_ir_adaptor_id: Optional[int] = Field(None, alias="channelControllerIRAdaptorID")
-    channel_controller_ir_emitter_id: Optional[int] = Field(None, alias="channelControllerIREmitterID")
-    user_type: Optional[str] = Field(None, alias="userType")
-    current_verify_mode: Optional[str] = Field(None, alias="currentVerifyMode")
-    current_event: Optional[bool] = Field(None, alias="currentEvent")
-    front_serial_no: Optional[int] = Field(None, alias="frontSerialNo")
-    attendance_status: Optional[str] = Field(None, alias="attendanceStatus")
-    status_value: Optional[int] = Field(None, alias="statusValue")
-    picture_url: Optional[str] = Field(None, alias="pictureURL")
-    pictures_number: Optional[int] = Field(None, alias="picturesNumber")
-    name: Optional[str] = Field(None, alias="name")
-    label: Optional[str] = Field(None, alias="label")
-    mask: Optional[str] = Field(None, alias="mask")
-    pure_pwd_verify_enable: Optional[bool] = Field(None, alias="purePwdVerifyEnable")
-    face_rect: Optional[FaceRect] = Field(None, alias="FaceRect")
+class HeartbeatInfo(BaseModel):
+    date_time: datetime = Field(alias="dateTime", description="Alarm triggered time in ISO 8601 format.")
+    active_post_count: int = Field(alias="activePostCount", description="Number of times that the same alarm has been triggered.")
+    event_type: str = Field(alias="eventType", description='Event type. Expected to be "heartBeat".')
+    event_state: str = Field(alias="eventState", description='Durative alarm/event status: "active" or "inactive".')
+    event_description: str = Field(alias="eventDescription", description='Event description, expected to be "Heartbeat".')
+    
+    model_config = ConfigDict(extra='ignore')
 
-    model_config = ConfigDict(populate_by_name=True, ignore_extra=True)
 
 
 class EventNotificationAlert(BaseModel):
-    ip_address: Optional[str] = Field(None, alias="ipAddress")
-    port_no: Optional[int] = Field(None, alias="portNo")
-    protocol: Optional[str] = Field(None, alias="protocol")
-    mac_address: Optional[str] = Field(None, alias="macAddress")
-    channel_id: Optional[int] = Field(None, alias="channelID")
-    date_time: datetime = Field(..., alias="dateTime")
-    active_post_count: Optional[int] = Field(None, alias="activePostCount")
-    event_type: str = Field(..., alias="eventType")
-    event_state: Optional[str] = Field(None, alias="eventState")
-    event_description: Optional[str] = Field(None, alias="eventDescription")
-    device_id: Optional[str] = Field(None, alias="deviceID")
-    access_controller_event: AccessControllerEvent = Field(..., alias="AccessControllerEvent")
+    date_time: datetime = Field(alias="dateTime", description="Alarm triggered time in ISO 8601 format.")
+    active_post_count: int = Field(alias="activePostCount", description="Number of times that the same alarm has been triggered.")
+    event_type: str = Field(alias="eventType", description='Event type, e.g., "accessControllerEvent".')
+    event_state: str = Field(alias="eventState", description='Durative alarm/event status: "active" or "inactive".')
+    event_description: str = Field(alias="eventDescription", description='Event description, e.g., "Access Controller Event".')
+    device_id: str = Field(alias="deviceID", description="Device ID.")
+    access_controller_event: "AccessControllerEvent" = Field(alias="AccessControllerEvent", description="Details of the access controller event.")
+    
+    model_config = ConfigDict(extra='ignore')
 
-    model_config = ConfigDict(populate_by_name=True, ignore_extra=True)
+
+class AccessControllerEvent(BaseModel):
+    major_event: int = Field(alias="majorEventType", description="Major event type.")
+    minor_event: int = Field(alias="subEventType", description="Minor event type.")
+    serial_no: Optional[int] = Field(alias="serialNo", default=None, description="Event serial No., which is used to check whether the event loss occurred.")
+    verify_no: Optional[int] = Field(alias="verifyNo", default=None, description="Multiple authentication No.")
+    person_id: Optional[str] = Field(alias="employeeNo", default=None, description="Employee No. (person ID)")
+    type: Optional[int] = Field(alias="type", default=None, description="Zone type: 0 (instant zone), 1 (24-hour zone), 2 (delayed zone), 3 (internal zone), 4 (key zone), 5 (fire alarm zone), 6 (perimeter zone), 7 (24-hour silent zone), 8 (24-hour auxiliary zone), 9 (24-hour shock zone), 10 (emergency door open zone), 11 (emergency door closed zone), 255 (none).")
+    swipe_card_type: Optional[int] = Field(alias="swipeCardType", default=None, description="Swipe card type: 0 (normal), 1 (swipe card), 2 (swipe card and password), 3 (swipe card and face), 4 (swipe card and fingerprint), 5 (swipe card and face and fingerprint), 6 (swipe card and face and password), 7 (swipe card and fingerprint and password), 8 (swipe card and face and fingerprint and password).")
+    card_no: Optional[str] = Field(alias="cardNo", default=None, description="Card No.")
+    card_type: Optional[int] = Field(alias="cardType", default=None, description="Card type: 1 (normal card), 2 (disability card), 3 (blocklist card), 4 (patrol card), 5 (duress card), 6 (super card), 7 (visitor card), 8 (dismiss card).")
+    user_type: Optional[str] = Field(alias="userType", default=None, description='Person type: "normal" (normal person (resident)), "visitor" (visitor), "blacklist" (person in the blocklist), "administrators" (administrator).')
+    current_verify_mode: Optional[VerifyMode] = Field(alias="currentVerifyMode", default=None, description='Current verification mode.')
+    current_event: Optional[bool] = Field(alias="currentEvent", default=None, description="Whether it is a real-time event: true, false.")
+    front_serial_no: Optional[int] = Field(alias="frontSerialNo", default=None, description="The previous event's serial No. If this field does not exist, the platform will check whether the event loss occurred according to the field serialNo. If both the serialNo and frontSerialNo are returned, the platform will check whether the event loss occurred according to both fields. It is mainly used to solve the problem that the serialNo is inconsistent after subscribing events or alarms.")
+    attendance_status: Optional[str] = Field(alias="attendanceStatus", default=None, description='Attendance status: "undefined", "checkIn" (check in), "checkOut" (check out), "breakOut" (start of break), "breakIn" (end of break), "overtimeIn" (start of overtime), "overTimeOut" (end of overtime).')
+    pictures_number: Optional[int] = Field(alias="picturesNumber", default=None, description="Number of pictures, if there is no picture, the value of this node is 0 or it is not returned.")
+    mask: Optional[str] = Field(default=None, description="Whether the person is wearing a mask.")
+
+
+EventUnion = Annotated[
+    Union[HeartbeatInfo, EventNotificationAlert],
+    Field(discriminator="event_type")
+]

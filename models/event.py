@@ -1,54 +1,77 @@
-# models/event.py
 from sqlalchemy import String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.dialects.postgresql import ENUM as PgEnum
+from sqlalchemy.types import DateTime
+from sqlalchemy.ext.mutable import MutableDict
+
+from enum import Enum
+from typing import Optional
 from datetime import datetime, timezone
+
 from db import Base
 
+
+
+class PersonPurpose(str, Enum):
+    ATTENDANCE = "att"
+    INFORMATION = "info"
 
 
 class Event(Base):
     __tablename__ = "events"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    date_time: Mapped[datetime] = mapped_column()
+
+    # Common event fields
+    date_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    active_post_count: Mapped[int]
     event_type: Mapped[str] = mapped_column()
-    event_state: Mapped[str] = mapped_column()
-    event_description: Mapped[str] = mapped_column()
-    device_id: Mapped[str] = mapped_column()
-    employee_name: Mapped[str] = mapped_column()
-    employee_no: Mapped[str] = mapped_column()
-    major_event_type: Mapped[int] = mapped_column()
-    sub_event_type: Mapped[int] = mapped_column()
-    current_verify_mode: Mapped[str] = mapped_column(nullable=True)
-    attendance_status: Mapped[str] = mapped_column()
-    label: Mapped[str] = mapped_column(String(255), nullable=True)
-    face_rect: Mapped[dict] = mapped_column(JSONB, nullable=True)
-    picture_url: Mapped[str] = mapped_column(nullable=True)
+    event_state: Mapped[str]
+    event_description: Mapped[str]
+    device_id: Mapped[str] = mapped_column(index=True)
 
-    created_at: Mapped[datetime] = mapped_column(default=datetime.now(timezone.utc), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(default=datetime.now(timezone.utc), onupdate=datetime.now(datetime.timezone.utc), nullable=False)
+    # Access controller related (nullable if not applicable)
+    major_event: Mapped[int] = mapped_column()
+    minor_event: Mapped[int] = mapped_column()
+    serial_no: Mapped[Optional[int]] = mapped_column(default=None)
+    verify_no: Mapped[Optional[int]] = mapped_column(default=None)
+    person_id: Mapped[Optional[str]] = mapped_column(default=None, index=True)
+    purpose: Mapped[Optional[PersonPurpose]] = mapped_column(PgEnum(PersonPurpose, name="person_purpose_enum"), default=None)
+    zone_type: Mapped[Optional[int]] = mapped_column(default=None)
+    swipe_card_type: Mapped[Optional[int]] = mapped_column(default=None)
+    card_no: Mapped[Optional[str]] = mapped_column(default=None)
+    card_type: Mapped[Optional[int]] = mapped_column(default=None)
+    user_type: Mapped[Optional[str]] = mapped_column(default=None)
+    current_verify_mode: Mapped[Optional[str]] = mapped_column(default=None)
+    current_event: Mapped[Optional[bool]] = mapped_column(default=None)
+    front_serial_no: Mapped[Optional[int]] = mapped_column(default=None)
+    attendance_status: Mapped[Optional[str]] = mapped_column(default=None, index=True)
+    pictures_number: Mapped[Optional[int]] = mapped_column(default=None)
+    mask: Mapped[Optional[str]] = mapped_column(default=None)
 
-    def __repr__(self):
-        return f"<Event(id={self.id}, date_time={self.date_time}, event_type={self.event_type}, device_id={self.device_id})>"
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "date_time": self.date_time.isoformat(),
-            "event_type": self.event_type,
-            "event_state": self.event_state,
-            "event_description": self.event_description,
-            "device_id": self.device_id,
-            "employee_name": self.employee_name,
-            "employee_no": self.employee_no,
-            "major_event_type": self.major_event_type,
-            "sub_event_type": self.sub_event_type,
-            "current_verify_mode": self.current_verify_mode,
-            "attendance_status": self.attendance_status,
-            "face_rect": self.face_rect,
-            "picture_url": self.picture_url,
-            "created_at": self.created_at.isoformat(),
-            "updated_at": self.updated_at.isoformat()
-        }
-    def __str__(self):
-        return f"Event(id={self.id}, date_time={self.date_time}, event_type={self.event_type}, device_id={self.device_id}, employee_name={self.employee_name})"
+    # Optional structured metadata (can store raw nested values)
+    event_metadata: Mapped[Optional[dict]] = mapped_column(MutableDict.as_mutable(JSONB), default=None)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now(timezone.utc))
+
+    def is_attendance_event(self) -> bool:
+        return (
+            self.attendance_status is not None and
+            self.purpose == PersonPurpose.ATTENDANCE
+        )
+
+
+class Heartbeat(Base):
+    __tablename__ = "heartbeats"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+
+    date_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    active_post_count: Mapped[int]
+    event_type: Mapped[str] = mapped_column(default="heartBeat")
+    event_state: Mapped[str]
+    event_description: Mapped[str]
+    device_id: Mapped[str] = mapped_column(index=True)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
