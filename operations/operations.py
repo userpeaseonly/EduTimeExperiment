@@ -3,9 +3,9 @@ import logging
 from datetime import datetime
 from fastapi import UploadFile
 
-from main import logger
 from core import config
 
+logger = logging.getLogger()
 
 def save_image(file: UploadFile | None, label: str) -> str | None:
     """Save uploaded image to disk."""
