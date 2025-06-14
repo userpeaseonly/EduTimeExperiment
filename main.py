@@ -71,6 +71,7 @@ async def receive_event(
                 )
                 await crud.create_heartbeat(event_in, db)
             elif isinstance(event, EventNotificationAlert):
+                print(f"Received event: {event.event_type} at current verify mode: {event.access_controller_event.current_verify_mode}")
                 log_pretty_event(event)
                 event_in = models.Event(
                     date_time=event.date_time,
@@ -104,7 +105,6 @@ async def receive_event(
             else:
                 logger.warning("Received unknown event type.")
         except ValidationError as ve:
-            logger.error("Validation failed for EventNotificationAlert.")
             logger.error(f"Validation error: {ve}")
             return JSONResponse(content={"error": str(ve)}, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
