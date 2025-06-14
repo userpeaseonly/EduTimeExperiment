@@ -7,7 +7,7 @@ from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 import json, textwrap, logging
 
-from schemas.events import EventNotificationAlert 
+from schemas.events import HeartbeatInfo, EventNotificationAlert, AccessControllerEvent, EventUnion
 
 from core import config
 from db import get_async_db
@@ -48,6 +48,9 @@ async def receive_event(
         event_data = json.loads(json_string)
         print("-------------------------------------------")
         print(event_data)
+        print("---------------------------Parsed Version--------------------------------------")
+        parsed_data = EventNotificationAlert(**event_data)
+        print(parsed_data)
         print("-------------------------------------------")
 
         # Log the core fields if present
