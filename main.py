@@ -46,7 +46,9 @@ async def receive_event(
             return JSONResponse(status_code=400, content={"error": "No valid event JSON found."})
 
         event_data = json.loads(json_string)
-        logger.debug(f"Received event data: {event_data}")
+        print("-------------------------------------------")
+        print(event_data)
+        print("-------------------------------------------")
 
         # Log the core fields if present
         logger.info(f"Received {event_data.get('eventType')} event from channel {event_data.get('channelID')}")
