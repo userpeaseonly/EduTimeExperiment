@@ -14,15 +14,24 @@ from utils import log_pretty_event, log_pretty_heartbeat
 from operations import crud, operations
 from db import get_async_db
 from models import event as models
+from contextlib import asynccontextmanager
 
 # Setup logging
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
-
 logger = logging.getLogger(__name__)
 
-# FastAPI app
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("Starting up the FastAPI application.")
+    yield
+    logger.info("Shutting down the FastAPI application.")
+
+app = FastAPI(lifespan=lifespan)
+
+
 app = FastAPI()
 app.mount("/images", StaticFiles(directory="event_images"), name="images")
 
