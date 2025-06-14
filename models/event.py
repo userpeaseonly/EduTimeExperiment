@@ -37,6 +37,7 @@ class Event(Base):
     serial_no: Mapped[Optional[int]] = mapped_column(default=None)
     verify_no: Mapped[Optional[int]] = mapped_column(default=None)
     person_id: Mapped[Optional[str]] = mapped_column(default=None, index=True)
+    person_name: Mapped[Optional[str]] = mapped_column(default=None, index=True)
     purpose: Mapped[Optional[PersonPurpose]] = mapped_column(PgEnum(PersonPurpose, name="person_purpose_enum"), default=None)
     zone_type: Mapped[Optional[int]] = mapped_column(default=None)
     swipe_card_type: Mapped[Optional[int]] = mapped_column(default=None)

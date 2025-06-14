@@ -3,7 +3,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
 from rich.pretty import Pretty
-from schemas.events import EventNotificationAlert
+from schemas.events import EventNotificationAlert, AccessControllerEvent
 
 console = Console()
 
@@ -23,12 +23,14 @@ def log_pretty_event(event: EventNotificationAlert) -> None:
     }
 
     # Prepare inner AccessControllerEvent data if available
-    ace = getattr(event, "access_controller_event", None)
+    # ace = getattr(event, "access_controller_event", None)
+    ace = event.access_controller_event if event.access_controller_event else None
     if ace:
         ace_data = {
             "Major Event": ace.major_event,
             "Minor Event": ace.minor_event,
             "Employee No": ace.person_id,
+            "Employee Name": ace.person_name,
             "Verify Mode": ace.current_verify_mode,
             "Attendance Status": ace.attendance_status,
             "User Type": ace.user_type,

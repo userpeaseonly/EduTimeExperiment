@@ -45,6 +45,7 @@ class AccessControllerEvent(BaseModel):
     attendance_status: Optional[str] = Field(alias="attendanceStatus", default=None, description='Attendance status: "undefined", "checkIn" (check in), "checkOut" (check out), "breakOut" (start of break), "breakIn" (end of break), "overtimeIn" (start of overtime), "overTimeOut" (end of overtime).')
     pictures_number: Optional[int] = Field(alias="picturesNumber", default=None, description="Number of pictures, if there is no picture, the value of this node is 0 or it is not returned.")
     mask: Optional[str] = Field(default=None, description="Whether the person is wearing a mask.")
+    person_name: Optional[str] = Field(alias="name", default=None, description="Person name.")
 
 
 EventUnion = Annotated[
