@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, ConfigDict
-from typing import Optional, Union, Annotated
+from typing import Optional, Union, Annotated, Literal
 from datetime import datetime
 
 from .verify_mode import VerifyMode
@@ -8,7 +8,7 @@ from .verify_mode import VerifyMode
 class HeartbeatInfo(BaseModel):
     date_time: datetime = Field(alias="dateTime", description="Alarm triggered time in ISO 8601 format.")
     active_post_count: int = Field(alias="activePostCount", description="Number of times that the same alarm has been triggered.")
-    event_type: str = Field(alias="eventType", description='Event type. Expected to be "heartBeat".')
+    event_type: Literal["Heartbeat"] = Field(alias="eventType", description='Event type. Expected to be "heartBeat".')
     event_state: str = Field(alias="eventState", description='Durative alarm/event status: "active" or "inactive".')
     event_description: str = Field(alias="eventDescription", description='Event description, expected to be "Heartbeat".')
     
