@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import ValidationError
 
-from schemas.events import HeartbeatInfo, EventNotificationAlert
+from schemas.events import HeartbeatInfo, EventNotificationAlert, EventUnion
 from core import config
 from utils import log_pretty_event
 from operations import operations as op
@@ -47,8 +47,11 @@ async def receive_event(
 
         # Parse and log event
         try:
-            parsed = EventNotificationAlert(**event_data)
-            log_pretty_event(parsed)
+            event = EventUnion(event_data)
+            if isinstance(event, HeartbeatInfo):
+                logger.info(event)
+            elif isinstance(event, EventNotificationAlert):
+                log_pretty_event(event)
         except ValidationError as ve:
             logger.error("Validation failed for EventNotificationAlert.")
             return JSONResponse(status_code=422, content={"error": str(ve)})
