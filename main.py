@@ -85,7 +85,7 @@ async def receive_event(
                     verify_no=event.access_controller_event.verify_no,
                     person_id=event.access_controller_event.person_id,
                     person_name=event.access_controller_event.person_name,
-                    purpose=models.PersonPurpose.ATTENDANCE.value if event.access_controller_event.person_name else models.PersonPurpose.INFORMATION.value,
+                    purpose=models.PersonPurpose.ATTENDANCE if event.access_controller_event.person_name else models.PersonPurpose.INFORMATION,
                     zone_type=event.access_controller_event.zone_type,
                     swipe_card_type=event.access_controller_event.swipe_card_type,
                     card_no=event.access_controller_event.card_no,
