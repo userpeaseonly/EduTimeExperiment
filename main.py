@@ -47,7 +47,7 @@ async def receive_event(
 
         # Parse and log event
         try:
-            event = TypeAdapter(EventUnion).validate_python(**event_data)
+            event = TypeAdapter(EventUnion).validate_python(**event_data, from_attributes=True)
             if isinstance(event, HeartbeatInfo):
                 logger.info(event)
             elif isinstance(event, EventNotificationAlert):
