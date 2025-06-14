@@ -12,7 +12,7 @@ class HeartbeatInfo(BaseModel):
     event_state: str = Field(alias="eventState", description='Durative alarm/event status: "active" or "inactive".')
     event_description: str = Field(alias="eventDescription", description='Event description, expected to be "Heartbeat".')
     
-    model_config = ConfigDict(extra='ignore')
+    model_config = ConfigDict(extra='strict')
 
 
 
@@ -25,7 +25,7 @@ class EventNotificationAlert(BaseModel):
     device_id: str = Field(alias="deviceID", description="Device ID.")
     access_controller_event: "AccessControllerEvent" = Field(alias="AccessControllerEvent", description="Details of the access controller event.")
     
-    model_config = ConfigDict(extra='ignore')
+    model_config = ConfigDict(extra='strict')
 
 
 class AccessControllerEvent(BaseModel):
