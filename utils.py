@@ -20,6 +20,7 @@ def log_pretty_event(event: EventNotificationAlert) -> None:
         "Event State": event.event_state,
         "Description": event.event_description,
         "Post Count": event.active_post_count,
+        "Date Time": event.date_time
     }
 
     # Prepare inner AccessControllerEvent data if available
