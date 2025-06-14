@@ -19,7 +19,7 @@ class HeartbeatInfo(BaseModel):
 class EventNotificationAlert(BaseModel):
     date_time: datetime = Field(alias="dateTime", description="Alarm triggered time in ISO 8601 format.")
     active_post_count: int = Field(alias="activePostCount", description="Number of times that the same alarm has been triggered.")
-    event_type: str = Field(alias="eventType", description='Event type, e.g., "accessControllerEvent".')
+    event_type: Literal["AccessControllerEvent"] = Field(alias="eventType", description='Event type, e.g., "accessControllerEvent".')
     event_state: str = Field(alias="eventState", description='Durative alarm/event status: "active" or "inactive".')
     event_description: str = Field(alias="eventDescription", description='Event description, e.g., "Access Controller Event".')
     device_id: str = Field(alias="deviceID", description="Device ID.")
