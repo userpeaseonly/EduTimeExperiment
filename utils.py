@@ -3,7 +3,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
 from rich.pretty import Pretty
-from schemas.events import EventNotificationAlert, AccessControllerEvent
+from schemas.events import EventNotificationAlert, HeartbeatInfo
 
 console = Console()
 
@@ -48,3 +48,25 @@ def log_pretty_event(event: EventNotificationAlert) -> None:
 
     # Additionally log to standard logger if needed
     logging.info(f"[Event] {event.event_type} from {event.device_id} at {event.date_time}")
+
+
+def log_pretty_heartbeat(heartbeat: HeartbeatInfo) -> None:
+    """Pretty print and log a HeartbeatInfo."""
+    
+    # Prepare header
+    header_text = Text(f"💓 Heartbeat Event", style="bold green")
+    header_text.append(f" | 📅 Time: {heartbeat.date_time}", style="dim")
+
+    # Create core metadata block
+    core_data = {
+        "Active Post Count": heartbeat.active_post_count,
+        "Event State": heartbeat.event_state,
+        "Description": heartbeat.event_description,
+        "Date Time": str(heartbeat.date_time),
+    }
+
+    # Use rich Panel to output
+    console.print(Panel(Pretty(core_data, expand_all=True), title=header_text))
+
+    # Additionally log to standard logger if needed
+    logging.info(f"[Heartbeat] at {heartbeat.date_time}")
