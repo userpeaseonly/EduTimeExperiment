@@ -25,6 +25,7 @@ app.mount("/images", StaticFiles(directory="event_images"), name="images")
 
 # Ensure save directory exists
 os.makedirs(config.SAVE_DIR, exist_ok=True)
+os.makedirs(config.LOGS_DIR, exist_ok=True)
 
 
 @app.post("/hik/events")
