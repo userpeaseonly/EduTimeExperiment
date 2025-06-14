@@ -58,7 +58,7 @@ async def receive_event(
             return JSONResponse(status_code=422, content={"error": str(ve)})
 
         # Save image
-        picture_path = op.save_image(Picture, "Picture")
+        op.save_image(Picture, "Picture")
 
         # Save raw JSON to disk
         event_id = datetime.now().strftime("%Y%m%d_%H%M%S")
