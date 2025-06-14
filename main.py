@@ -85,7 +85,7 @@ async def receive_event(
                     verify_no=event.access_controller_event.verify_no,
                     person_id=event.access_controller_event.person_id,
                     person_name=event.access_controller_event.person_name,
-                    purpose=models.PersonPurpose.ATTENDANCE if event.access_controller_event.person_name else models.PersonPurpose.INFORMATION,
+                    purpose=models.PersonPurpose.ATTENDANCE.value if event.access_controller_event.person_name else models.PersonPurpose.INFORMATION.value,
                     zone_type=event.access_controller_event.zone_type,
                     swipe_card_type=event.access_controller_event.swipe_card_type,
                     card_no=event.access_controller_event.card_no,
@@ -99,6 +99,7 @@ async def receive_event(
                     mask=event.access_controller_event.mask
                 )
                 print("Purpose being saved:", event_in.purpose, type(event_in.purpose))
+                print(f"Event name {models.PersonPurpose.ATTENDANCE.name} - {models.PersonPurpose.ATTENDANCE.value}")
                 print("=-==--=-=--=-=-=-=-=-=--==-=-=-==--=-=----=============================-----------==========-------------===========")
                 await crud.create_event(event_in, db)
             else:
