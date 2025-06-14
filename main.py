@@ -26,14 +26,11 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Starting up the FastAPI application.")
-    print("fasdfasfas")
     yield
     logger.info("Shutting down the FastAPI application.")
 
 app = FastAPI(lifespan=lifespan)
 
-
-app = FastAPI()
 app.mount("/images", StaticFiles(directory="event_images"), name="images")
 
 # Ensure save directory exists
