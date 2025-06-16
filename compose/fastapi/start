@@ -13,9 +13,15 @@ WORKERS=$((2 * CPU_CORES + 1))
 
 WORKERS=$((WORKERS / 8)) # Adjusting workers to 1/4 of the calculated value
 
-
 echo "🖥️ Detected CPU cores: $CPU_CORES"
 echo "👷 Configuring Uvicorn workers: $WORKERS"
+
+echo "⏳ Waiting for PostgreSQL to be ready..."
+until pg_isready -h db -p 5432 -U $POSTGRES_USER; do
+    echo "Waiting for DB..."
+    sleep 1
+done
+echo "✅ PostgreSQL is ready"
 
 echo "🔧 Running Alembic migrations..."
 alembic upgrade head

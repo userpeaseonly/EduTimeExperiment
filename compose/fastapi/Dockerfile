@@ -5,6 +5,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    postgresql-client \
     build-essential \
     libpq-dev \
     && apt-get clean \
