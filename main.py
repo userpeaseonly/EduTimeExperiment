@@ -108,7 +108,8 @@ async def receive_event(
             return JSONResponse(content={"error": str(ve)}, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
         # Save image
-        await operations.save_image(Picture, "Picture")
+        path_name = await operations.save_image(Picture, "Picture")
+        logger.info(f"Image saved at: {path_name}")
 
         return JSONResponse(content={"status": "ok"}, status_code=status.HTTP_200_OK)
 
