@@ -16,9 +16,6 @@ COPY ./requirements.txt /requirements.txt
 RUN pip install --no-cache-dir -r /requirements.txt
 
 
-COPY ./compose/fastapi/entrypoint /entrypoint
-RUN sed -i 's/\r$//g' /entrypoint && chmod +x /entrypoint
-
 COPY ./compose/fastapi/start /start
 RUN sed -i 's/\r$//g' /start && chmod +x /start
 
@@ -29,4 +26,4 @@ COPY . .
 WORKDIR /app
 
 
-CMD ["/entrypoint"]
+CMD ["/start"]

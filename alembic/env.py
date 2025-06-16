@@ -19,6 +19,9 @@ config = context.config
 
 
 db_url = os.getenv("DATABASE_URL")
+db_url_external = os.getenv("DATABASE_URL_EXTERNAL")
+
+generating_migrations = os.getenv("GENERATING_MIGRATIONS", "false").lower() == "true"
 
 if db_url:
     config.set_main_option("sqlalchemy.url", db_url)
@@ -78,8 +81,8 @@ def run_migrations_online() -> None:
     #     prefix="sqlalchemy.",
     #     poolclass=pool.NullPool,
     # )
-    connectable = create_engine(
-        settings.DATABASE_URL.replace("postgresql+asyncpg", "postgresql"),
+    connectable = create_engine( # settings.DATABASE_URL.replace("postgresql+asyncpg", "postgresql") if not generating_migrations else db_url_external,
+        db_url_external if generating_migrations else settings.DATABASE_URL.replace("postgresql+asyncpg", "postgresql"),
         poolclass=pool.NullPool,
     )
     

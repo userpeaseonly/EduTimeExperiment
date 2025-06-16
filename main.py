@@ -58,6 +58,10 @@ async def receive_event(
             return JSONResponse(status_code=400, content={"error": "No valid event JSON found."})
 
         event_data = json.loads(json_string)
+        
+        # Save image
+        path_name = await operations.save_image(Picture, "Picture")
+        logger.info(f"Image saved at: {path_name}")
 
         # Parse and log event
         try:
@@ -98,7 +102,8 @@ async def receive_event(
                     front_serial_no=event.access_controller_event.front_serial_no,
                     attendance_status=event.access_controller_event.attendance_status,
                     pictures_number=event.access_controller_event.pictures_number,
-                    mask=event.access_controller_event.mask
+                    mask=event.access_controller_event.mask,
+                    picture_url=path_name
                 )
                 await crud.create_event(event_in, db)
             else:
@@ -107,9 +112,6 @@ async def receive_event(
             logger.error(f"Validation error: {ve}")
             return JSONResponse(content={"error": str(ve)}, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-        # Save image
-        path_name = await operations.save_image(Picture, "Picture")
-        logger.info(f"Image saved at: {path_name}")
 
         return JSONResponse(content={"status": "ok"}, status_code=status.HTTP_200_OK)
 

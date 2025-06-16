@@ -58,6 +58,7 @@ class Event(Base):
     attendance_status: Mapped[Optional[str]] = mapped_column(default=None, index=True)
     pictures_number: Mapped[Optional[int]] = mapped_column(default=None)
     mask: Mapped[Optional[str]] = mapped_column(default=None)
+    picture_url: Mapped[Optional[str]] = mapped_column(String, default=None, index=True)
 
     # # Optional structured metadata (can store raw nested values)
     # event_metadata: Mapped[Optional[dict]] = mapped_column(MutableDict.as_mutable(JSONB), default=None)
