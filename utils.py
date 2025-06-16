@@ -26,7 +26,7 @@ def log_pretty_event(event: EventNotificationAlert) -> None:
     }
 
     # Prepare inner AccessControllerEvent data if available
-    ace = event.access_controller_event if event.access_controller_event else None
+    ace = event.access_controller_event or None
     if ace:
         ace_data = {
             "Employee No": ace.person_id,
@@ -41,7 +41,7 @@ def log_pretty_event(event: EventNotificationAlert) -> None:
         }
 
         # Merge into core data for display
-        core_data.update({f"[AC] {k}": v for k, v in ace_data.items() if v is not None})
+        core_data |= {f"[AC] {k}": v for k, v in ace_data.items() if v is not None}
 
     # Use rich Panel to output
     console.print(Panel(Pretty(core_data, expand_all=True), title=header_text))
@@ -54,7 +54,7 @@ def log_pretty_heartbeat(heartbeat: HeartbeatInfo) -> None:
     """Pretty print and log a HeartbeatInfo."""
     
     # Prepare header
-    header_text = Text(f"💓 Heartbeat Event", style="bold green")
+    header_text = Text("💓 Heartbeat Event", style="bold green")
     header_text.append(f" | 📅 Time: {heartbeat.date_time}", style="dim")
 
     # Create core metadata block

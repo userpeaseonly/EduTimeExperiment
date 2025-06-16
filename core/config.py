@@ -1,4 +1,10 @@
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
+
+
+DATABASE_URL=os.environ.get('DATABASE_URL')
 
 
 LANGUAGE_CODE = 'en'
@@ -9,6 +15,6 @@ USE_I18N = True
 USE_TZ = True
 
 
-SAVE_DIR = "event_images"
+SAVE_DIR = os.environ.get('SAVE_DIR', 'saved_images')
 
-LOGS_DIR = "logs"
+LOGS_DIR = os.environ.get('LOGS_DIR', 'logs')

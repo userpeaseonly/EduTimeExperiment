@@ -1,0 +1,24 @@
+#!/bin/bash
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+echo "📦 Waiting for the database to be ready..."
+# Optional: use `wait-for-it` or `sleep` if needed
+# sleep 5
+
+CPU_CORES=$(nproc)
+WORKERS=$((2 * CPU_CORES + 1))
+
+WORKERS=$((WORKERS / 8)) # Adjusting workers to 1/4 of the calculated value
+
+
+echo "🖥️ Detected CPU cores: $CPU_CORES"
+echo "👷 Configuring Uvicorn workers: $WORKERS"
+
+echo "🔧 Running Alembic migrations..."
+alembic upgrade head
+
+echo "🚀 Starting FastAPI with Uvicorn..."
+exec uvicorn main:app --host 0.0.0.0 --port 8000 --workers $WORKERS --proxy-headers
