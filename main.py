@@ -32,6 +32,7 @@ async def lifespan(app: FastAPI):
     logger.info("Shutting down the FastAPI application.")
 
 app = FastAPI(lifespan=lifespan)
+app.add_middleware(ASGIRawLoggerMiddleware)
 
 app.mount("/images", StaticFiles(directory="event_images"), name="images")
 
