@@ -16,6 +16,8 @@ from db import get_async_db
 from models import event as models
 from contextlib import asynccontextmanager
 
+from middleware import ASGIRawLoggerMiddleware
+
 # Setup logging
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
