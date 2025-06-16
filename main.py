@@ -48,6 +48,7 @@ async def receive_event(
 ) -> dict[str, str]:
     try:
         form = await request.form()
+        logger.info(f"Received form data: {form}")
 
         # Extract JSON part from form data
         json_string = next(
@@ -58,7 +59,6 @@ async def receive_event(
             return JSONResponse(status_code=400, content={"error": "No valid event JSON found."})
 
         event_data = json.loads(json_string)
-        logger.info(f"Received event data: {event_data}")
 
         # Parse and log event
         try:
