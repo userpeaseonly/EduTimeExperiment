@@ -82,6 +82,5 @@ class Heartbeat(Base):
     event_type: Mapped[str] = mapped_column(default="heartBeat")
     event_state: Mapped[str]
     event_description: Mapped[str]
-    device_id: Mapped[str] = mapped_column(index=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
