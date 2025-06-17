@@ -83,4 +83,4 @@ class Heartbeat(Base):
     event_state: Mapped[str]
     event_description: Mapped[str]
 
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now(timezone.utc))
