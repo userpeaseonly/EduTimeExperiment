@@ -33,7 +33,7 @@ class AccessControllerEvent(BaseModel):
     minor_event: int = Field(alias="subEventType", description="Minor event type.")
     serial_no: Optional[int] = Field(alias="serialNo", default=None, description="Event serial No., which is used to check whether the event loss occurred.")
     verify_no: Optional[int] = Field(alias="verifyNo", default=None, description="Multiple authentication No.")
-    person_id: Optional[str] = Field(alias="employeeNo", default=None, description="Employee No. (person ID)")
+    person_id: Optional[str] = Field(alias="employeeNoString", default=None, description="Employee No. (person ID)")
     zone_type: Optional[int] = Field(alias="type", default=None, description="Zone type: 0 (instant zone), 1 (24-hour zone), 2 (delayed zone), 3 (internal zone), 4 (key zone), 5 (fire alarm zone), 6 (perimeter zone), 7 (24-hour silent zone), 8 (24-hour auxiliary zone), 9 (24-hour shock zone), 10 (emergency door open zone), 11 (emergency door closed zone), 255 (none).")
     swipe_card_type: Optional[int] = Field(alias="swipeCardType", default=None, description="Swipe card type: 0 (normal), 1 (swipe card), 2 (swipe card and password), 3 (swipe card and face), 4 (swipe card and fingerprint), 5 (swipe card and face and fingerprint), 6 (swipe card and face and password), 7 (swipe card and fingerprint and password), 8 (swipe card and face and fingerprint and password).")
     card_no: Optional[str] = Field(alias="cardNo", default=None, description="Card No.")
