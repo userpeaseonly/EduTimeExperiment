@@ -64,7 +64,7 @@ async def receive_event(
         logger.info(f"Image saved at: {path_name}")
 
         # Parse and log event
-        print(event)
+        print(event_data)
         try:
             event = TypeAdapter(EventUnion).validate_python(event_data)
             if isinstance(event, HeartbeatInfo):
