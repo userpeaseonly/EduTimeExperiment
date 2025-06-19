@@ -30,7 +30,7 @@ async def save_image(file: UploadFile | None, label: str) -> str | None:
         async with aiofiles.open(path, "wb") as f:
             await f.write(content)
         logger.info(f"Saved Image: {path}")
-        return filename
+        return filename 
     except Exception as e:
         logger.error("Failed to save image: {e}")
         return None
