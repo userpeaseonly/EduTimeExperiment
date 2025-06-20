@@ -11,7 +11,7 @@ echo "📦 Waiting for the database to be ready..."
 CPU_CORES=$(nproc)
 WORKERS=$((2 * CPU_CORES + 1))
 
-WORKERS=$((WORKERS / 8)) # Adjusting workers to 1/4 of the calculated value
+# WORKERS=$((WORKERS / 8)) # Adjusting workers to 1/4 of the calculated value
 
 echo "🖥️ Detected CPU cores: $CPU_CORES"
 echo "👷 Configuring Uvicorn workers: $WORKERS"
